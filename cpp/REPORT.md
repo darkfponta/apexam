@@ -26,9 +26,9 @@ The concept can be generalized and adapted for any order relation (total or weak
 ## The code implementation
 
 The code implementation is composed of two main parts: 
-- the header file **btree.h** defines the class `Bst` and its methods and fields as well as the `Node` class
+- the header file **bst.h** defines the class `Bst` and its methods and fields as well as the `Node` class
 	that is the object type that the Bst will handle;
-- the source file **btree.cc** in which the longer member functions are implemented.
+- the source file **bst.cc** in which the longer member functions are implemented.
 
 Another ancillary file has also been created:
 - **except.h** defines the exceptions that the `Bst` could throw;
@@ -38,7 +38,7 @@ Another ancillary file has also been created:
 The `Bst` class is **templated** according to the following pattern:
 
 ```c++
-template <typename K, typename V, class C = less<K>>
+template <typename K, typename V, class C = std::less<K>>
 ```
 
 where:
@@ -50,7 +50,7 @@ where:
 
 The class has the following **members**:
 - `root` a unique pointer to the root Node
-- `comp` a local instance of type C used for the comparisons
+- `comp` a local instance of type `C` used for the comparisons
 
 The class also includes other inner types:
 - the `Node` class
@@ -113,15 +113,18 @@ This structure can be used as a comparator in the `std` library function such as
 	traversing the tree through a ConstIterator, it then clears the existing nodes; the tree is then filled again with
 	the help of the recursive function `insertSorted` which takes advantage of the fact that the keys are traversed in-order
 	and this drastically improves the performance when compared with the function `insertSingle`.
-- `checkBalanced()`: the function checks if the tree is balanced by recursively using the private function `checkBalancedInternal`.
+- `checkBalanced`: the function checks if the tree is balanced by recursively using the private function `checkBalancedInternal`. The function has two overloads:
+  - `checkBalancedInternal(const Node* node)` the function works recursively by calling itself on the node left and right pointers;
+	  choosing a particular node, the function will check whether the subtree rooted in that node is balanced.
+  - `checkBalancedInternal()` this calls the previous overload using the root node as the argument.
 - `find(K)`: the function returns an Iterator to the node with the given key. This function proceeds recursively from
 	the root node descending the tree according to the given comparator until the correct node is found.
     If they key is not present, the `Iterator{nullptr}` is returned.
 - `cfind(K)`: the function is the constant counterpart if `find` and returns a `ConstIterator`.
 - `erase(K)`: the function which deletes the node with the given key. If the node with the given key is not present,
 	a `NotFoundException` is thrown.
-- subscript `operator[](K)` (const and non-const): these functions return the value associated with the given key.
-	If the non const overload doesn't find the corresponding node, a new one is created with the given key.
+- subscript `operator[](K)` (const and non-const): these functions return a reference to the value associated with the given key enabling a getter-setter semantic.
+	If the non-const overload doesn't find the corresponding node, a new one is created with the given key.
 	The const overload, on the other hand, will throw a NotFoundException is the corresponding node can't be found.
 	
 
@@ -148,13 +151,13 @@ The code, run under **valgrind**, shows that the memory management is carried ou
 
 ### Run
 
-The file **testingmain.cc** has been compiled with the option -D DEBUG, that allows some important functions to
+Compiling the file **testingmain.cc** with the option -D DEBUG, allows some important functions to
 print to screen when the execution passes through them: this way we can check that the correct methods are called
 like, for example, the correct semantic (*copy* or *move*).
 
-The code revolves around a tree built with this unordered array of keys (10, 79, 13, 80, 60, 50).
+The code implemented in the file revolves around a tree built with this unordered array of keys (10, 79, 13, 80, 60, 50).
 
-The functions described above are tested and work as intended.
+The functions described above have been tested and work as intended.
 
 ```
        13                      50
@@ -168,28 +171,27 @@ The functions described above are tested and work as intended.
 > Graphical representation of one of the operations performed during the tests.
 
 As a further step, a custom comparison is implemented (`mycomparison` in **misc.h**). The implemented comparator
-is the inverse order relation that `std::less<K>` gives.
+is the inverse order relation that `std::less<K>` gives (e.g. the hand written equivalent of `std::greater<K>`).
 
-The results printed by the program show the correct
-handling of the custom comparator.
+The results printed by the program show the correct handling of this custom comparator.
 
 
 ### Time complexity
 
 The file **timingmain.cc** pertains the performance testing of the `find` function. The code proceeds as follows:
 
-- trees of **2^8^** to **2^24^** nodes are generated
+- trees of **2<sup>8</sup>** to **2<sup>24</sup>** nodes are generated
 - for each size the tree is built from a randomly shuffled (`std::shuffle`) vector of type `size_t` containing all the
   numbers from **0** to **size-1**
-- then 100 key picked randomly in the range **0..size-1**
+- then 100 key are picked randomly in the range **0..size-1**
 - for each key the `find(key)` function is called and the elapsed time in nanoseconds for each call is recorded
 - the balance function is then called
-- the `find(key)` function is issued again for the same keys as before and times are recorded
-- together with the times, also the maximum depths and the average depths are written to file.
+- the `find(key)` function is called again for the same keys as before and times are recorded again
+- together with the times, also the maximum depths and the average depths are written to an output file.
 
 The time is measured using `std::chrono::high_resolution_clock:now()`.
 
-A run of the program produces the file **times.txt** which contains csv data that produces 
+A run of the program produces the file **times.txt** which contains csv-formatted data that produces 
 a table of this fashion:
 
 | exp  | prepost  | depth  | avgdepth  | val1  | val2 | ... | val100 |
@@ -207,23 +209,25 @@ The graphs below are produced as a result.
 > Comparison of times elapsed by each call of `find`
 
 The graph above shows the different performance of the Bst before and after calling the `balance` function.
-The average times are plotted together with +/- std dev intervals.
+The average times are plotted together with +/- std dev intervals just to give an indication of the variability of the readings.
 
 As can be seen, before balancing the tree the times are on average higher and more variable (the black line). This is
-the expected behaviour. It should be noted that the worst case performance on an unbalanced Bst is `O(N)`: this
-can happen in few highly pathological cases (the Bst collapses into a list).
+the expected behaviour.
+Moreover it should be noted that the worst case performance on an unbalanced Bst is `O(N)`: this
+can happen in few highly pathological cases (when the Bst collapses into a list).
 In our case the Bst is generated randomly: the pathological case is unlikely and the trend resembles a
 logarithmic function.
 
 After balancing the tree, the performance improves and is less variable (red line). The behavior is clearly
-`O(logN)`. As a test, the best fitting logarithmic law is calculated and plotted (blue line).
-The match is very good.
+`O(logN)`.
+To confirm this, the best fitting logarithmic law is calculated and plotted (blue line).
+The match is very good (R<sup>2</sup>=0.995).
 
-The dependence of the behavior on the average tree depth is investigated below.
+For the sake of completion, the dependence of the behavior on the average tree depth is investigated below.
 
 ![Timesdepthplot](timesdepthplot.png)
 > The mean times are plotted and compared with the average tree depth for each case
 
-For the sake of completion, the plot above shows the trend of mean times together with the average depths.
+The plot above shows the trend of mean times together with the average depths.
 As can be expected the times and the depths show the same qualitative trend. The scale of representation
 is set on purpose to mark the correspondence.

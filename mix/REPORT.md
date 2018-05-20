@@ -24,7 +24,7 @@ The code implementation is carried out in the file **_bst.cc** and consists of t
 
 - the second part consists of the python module definition, that is the explicit definition of all the objects and functions exposed in the interface.
 
-
+  
 
 ### The `_Bst` class
 
@@ -43,7 +43,7 @@ where:
 
 #### The additional methods
   
-The class has the following **members**:
+The class has the following **methods**:
 - `get_item` the getter that will replace the `operator[](const K& key)` which couldn't be exposed directly.
 - `set_item` the setter that will replace the `operator[](const K& key)` in assignment statements.
 
@@ -113,6 +113,31 @@ BOOST_PYTHON_MODULE(_bst)
 
 this means that the module is called **_bst** and this name should be used when referring to it from python code. Between the braces following this definition the following take place:
 
+- the initialization of the three object converters  **std_pair_to_tuple**, **pair_from_python_tuple**, **vector_from_python_list**. The constructor defined for these structures will add the converters to a list used by boost::python to call the right converter at the right time.
+- the class converter for `std::vector<std::pair<size_t,size_t>>` is defined. This will implicitly refer to the converters initialized in the previous point to convert python lists of tuples to vectors of pairs which are used in the Bst class.
+
+- using `register_exception_translator<T>` the exception mangling functions for the three custom exceptions are defined.
+- finally the `_Bst<size_t,size_t,std::less<size_t>>` class is exported. The name used is **Bst_sizet**. The exported functions are the following:
+  - `init<>`, default constructor as Bst::Bst(C c = C{})
+  - `init<std::pair<size_t,size_t>>())`, the constructor taking a std::pair to define the root node as 
+  - `init<std::vector<tpair>>())`, the constructor building a tree from the given vector as . In the python code the input container is a list of tuples.
+  - `print`, calls
+  - `detailedPrint ` , calls
+  - `addSubTree`, calls
+  - `addSubTreeBalanced`, calls
+  - `insert`, calls
+  - `size`, calls &ttree::size)
+  - `depth`, calls (size_t(ttree::*)())0, depth_overload0())
+  - `avgdepth`, calls &ttree::avgdepth)
+  - `balance`, calls &ttree::balance)
+  - `clear`, calls&ttree::clear)
+  - `erase`, calls&ttree::erase)
+  - `checkBalanced`, calls (size_t(ttree::*)())0, checkbalanced_overload0())
+  - `__iter__`, defines the iterator range using python::iterator<ttree>())
+  - `__getitem__`, calls &ttree::bst_getitem)
+  - `__setitem__`, calls &ttree::bst_setitem)
+
+
 
 
 ## The code example
@@ -133,4 +158,3 @@ The main functions described above are tested and work as intended.
         50				   
 ```
 > Graphical representation of one of the operations performed during the tests.
-

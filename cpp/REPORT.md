@@ -123,14 +123,23 @@ This structure can be used as a comparator in the `std` library function such as
 - subscript `operator[](K)` (const and non-const): these functions return the value associated with the given key.
 	If the non const overload doesn't find the corresponding node, a new one is created with the given key.
 	The const overload, on the other hand, will throw a NotFoundException is the corresponding node can't be found.
-
 	
+
 
 ## Testing
 
 Testing is performed in two phases:
 
-1. Generic testing (**testingmain.cc**): all the most important functions are called.
+1. Generic testing (**testingmain.cc**): all the most important functions are called, in particular:
+
+    - the *constructor*, *destructor* and *copy-move* sematics;
+    - the `print` and `detailedprint` functions;
+    - the `depth` and `averagedepth` functions
+    - the `find` function and the `[]` (subscript) operators;
+    - the `balance` and `checkbalanced` function;
+    - the `clear` function;
+
+	these implicitly allow to test the other internal functions.
 
 2. Time complexity testing (**timingmain.cc**): the performance of the `find()` function is measured.
 
@@ -139,5 +148,82 @@ The code, run under **valgrind**, shows that the memory management is carried ou
 
 ### Run
 
+The file **testingmain.cc** has been compiled with the option -D DEBUG, that allows some important functions to
+print to screen when the execution passes through them: this way we can check that the correct methods are called
+like, for example, the correct semantic (*copy* or *move*).
+
+The code revolves around a tree built with this unordered array of keys (10, 79, 13, 80, 60, 50).
+
+The functions described above are tested and work as intended.
+
+```
+       13                      50
+      /  \      balance()     /   \
+     10   79       ==>      10     79
+          / \                \    /  \
+         60  80              13  60   80
+         /				   
+        50				   
+```
+> Graphical representation of one of the operations performed during the tests.
+
+As a further step, a custom comparison is implemented (`mycomparison` in **misc.h**). The implemented comparator
+is the inverse order relation that `std::less<K>` gives.
+
+The results printed by the program show the correct
+handling of the custom comparator.
+
 
 ### Time complexity
+
+The file **timingmain.cc** pertains the performance testing of the `find` function. The code proceeds as follows:
+
+- trees of **2^8^** to **2^24^** nodes are generated
+- for each size the tree is built from a randomly shuffled (`std::shuffle`) vector of type `size_t` containing all the
+  numbers from **0** to **size-1**
+- then 100 key picked randomly in the range **0..size-1**
+- for each key the `find(key)` function is called and the elapsed time in nanoseconds for each call is recorded
+- the balance function is then called
+- the `find(key)` function is issued again for the same keys as before and times are recorded
+- together with the times, also the maximum depths and the average depths are written to file.
+
+The time is measured using `std::chrono::high_resolution_clock:now()`.
+
+A run of the program produces the file **times.txt** which contains csv data that produces 
+a table of this fashion:
+
+| exp  | prepost  | depth  | avgdepth  | val1  | val2 | ... | val100 |
+|---:|:---:|---:|---:|:---:|:---:|:---:|:---:|
+| 8 | 0 | 15  | 8.69  | 7698  |  3421 | ...  | 3849 |
+| 8 | 1 |  9 |  7.04 | 5132 |  5132 | ...  | 4704 |
+| 9 | 0 |  21 |  10.8 | 2994  | 3849  | ...  | 7698 |
+
+An R script has been setup for the purpose of processing the gathered data:
+means and standard deviations of the measured times are calculated for each condition (size, balancing).
+
+The graphs below are produced as a result.
+
+![Timesplot](timesplot.png)
+> Comparison of times elapsed by each call of `find`
+
+The graph above shows the different performance of the Bst before and after calling the `balance` function.
+The average times are plotted together with +/- std dev intervals.
+
+As can be seen, before balancing the tree the times are on average higher and more variable (the black line). This is
+the expected behaviour. It should be noted that the worst case performance on an unbalanced Bst is `O(N)`: this
+can happen in few highly pathological cases (the Bst collapses into a list).
+In our case the Bst is generated randomly: the pathological case is unlikely and the trend resembles a
+logarithmic function.
+
+After balancing the tree, the performance improves and is less variable (red line). The behavior is clearly
+`O(logN)`. As a test, the best fitting logarithmic law is calculated and plotted (blue line).
+The match is very good.
+
+The dependence of the behavior on the average tree depth is investigated below.
+
+![Timesdepthplot](timesdepthplot.png)
+> The mean times are plotted and compared with the average tree depth for each case
+
+For the sake of completion, the plot above shows the trend of mean times together with the average depths.
+As can be expected the times and the depths show the same qualitative trend. The scale of representation
+is set on purpose to mark the correspondence.

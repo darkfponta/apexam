@@ -19,8 +19,8 @@ The **Makefile** provided allows to compile the code.
 
 In order to build the interface the user must provide a **Makefile.ini** file containing the definition of the following variables:
 
-- **PYTHON**: the path to python include files
-- **BOOST_PYTHON**: the path tho the boost::python library
+- **PYTHON**: the path to the python include files
+- **BOOST_PYTHON**: the path to the boost::python library
 - **BOOST_PYTHON_LIB**: the linker directive holding the boost::python library name
 
 An example could be:

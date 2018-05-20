@@ -12,7 +12,7 @@ using namespace std;
 
 #define KVpair std::pair<K, V>
 #define alloc(T) allocator<T>
-#define absdiff(a,b) (a > b ? a - b : b - a)
+#define absdiff(a,b) a > b ? a - b : b - a
 
 template <typename K, typename V, class C = less<K>>
 class Bst {
@@ -60,13 +60,13 @@ public:
 
 		friend class Bst;
 	};
-	
+
 protected:
 	/// the root node
 	unique_ptr<Node> root;
 	/// the local copy of the comparison
 	C comp;
-	
+
 	/// moves down the tree from the given node always picking the left branches
 	static void ffwd(Node*& n) {
 		while (n->left != nullptr)
@@ -114,14 +114,14 @@ public:
 	class Iterator;
 	// ConstIterator fwd decl
 	class ConstIterator;
-	
+
 	/// default constructor
 	Bst(C c = C{}) : comp{ c } {
 #ifdef DEBUG
 		cout << "Bst(C c = C{})" << endl;
 #endif
 	}
-	
+
 	/// constructor with root
 	Bst(KVpair pair, C c = C{}) : root{ new Node{pair,nullptr} }, comp{ c } {
 #ifdef DEBUG
@@ -197,7 +197,7 @@ public:
 	void insert(const KVpair& pair) {
 		insertInternal(pair); // ignore returned pointer
 	}
-	
+
 	/// computes the number of nodes
 	size_t size() const;
 	/// computes the maximum depth of the tree
@@ -209,14 +209,14 @@ public:
 
 	/// Balances the Bst
 	void balance();
-	
+
 	/// Clears the Bst
 	void clear() { root.reset(); };
 	/// deletes the node with the given key
 	void erase(const K& key);
-	
+
 	/// checks whether the tree is balanced
-	bool checkBalanced() const;
+	bool checkBalanced() const { return checkBalanced(root.get()); };
 	/// checks whether the subtree rooted in the given node is balanced
 	bool checkBalanced(const Node * const node) const;
 
@@ -250,7 +250,7 @@ public:
 			return (*it).pair.second;
 		}
 	}
-	
+
 	/**
 	 * \brief begin function of the iterator
 	 * \return the leftmost node of the Bst
@@ -268,8 +268,8 @@ public:
 	* \return Iterator of nullptr
 	*/
 	Iterator end() { return Iterator{ nullptr }; }
-	
-	
+
+
 	/**
 	* \brief begin function of the const iterator
 	* \return the leftmost node of the Bst
@@ -327,7 +327,7 @@ public:
 		}
 		return *this;
 	}
-	
+
 	/// moves the iterator forward
 	Iterator operator++(int) {
 		Iterator it{ current };
@@ -352,7 +352,7 @@ class Bst<K,V,C>::ConstIterator :
 	
 	using parent = typename Bst<K, V, C>::Iterator;
 	using N = typename parent::N;
-	
+
 public:
 	/// use parent constructor
 	using parent::Iterator;

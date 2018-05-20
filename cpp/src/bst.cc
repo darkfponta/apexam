@@ -94,6 +94,45 @@ void Bst<K, V, C>::print() const {
 	cout << endl;
 }
 
+template <typename K, typename V, class C>
+void Bst<K, V, C>::erase(const K& key) {
+	auto found = (find(key));
+	if (found!= end()) {
+		Node& n = *found;
+
+		vector<KVpair> container{};
+
+		Node* left = n.left.release();
+		if (left) {
+			left->parent = nullptr;
+			Bst leftTree{ };
+			leftTree.root.reset(left);
+			for (auto it = leftTree.cbegin(); it != leftTree.cend(); ++it)
+				container.push_back((*it).pair);
+		}
+
+		Node* right = n.right.release();
+		if (right) {
+			right->parent = nullptr;
+			Bst rightTree{ };
+			rightTree.root.reset(right);
+			for (auto it = rightTree.cbegin(); it != rightTree.cend(); ++it)
+				container.push_back((*it).pair);
+		}
+
+		if (root.get() == &n)
+			root.release();
+		else
+			this->detachParent(&n);
+
+		delete &n;
+
+		for (auto it : container)
+			insert(it);
+	}
+	else { throw NotFoundException(); };
+}
+
 
 // specialized templates
 template class Bst<size_t, size_t>;

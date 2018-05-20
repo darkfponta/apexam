@@ -145,14 +145,45 @@ public:
 #endif 
 		this->clear();
 	};
-	
+
+	/// Gets the root node
+	const Node* getRoot() const { return root.get(); };
+
+	/// Prints all the nodes in the format key: value
+	void print() const;
+	/// Prints all the contents of the Bst including the connected nodes for each node
+	void detailedPrint() const;
+
+	/// Adds to the tree all the vector elements in the given range
+	void addSubTree(const vector<KVpair>& container, size_t first, size_t last);
 	/// adds a new node
 	void insert(const KVpair& pair) {
 		insertInternal(pair); // ignore returned pointer
 	}
 	
+	/// computes the number of nodes
+	size_t size() const;
+	/// computes the maximum depth of the tree
+	size_t depth() const;
+	/// computes the average depth of the tree
+	double avgdepth() const;
+
+	/// Balances the Bst
+	void balance();
+	
 	/// Clears the Bst
 	void clear() { root.reset(); };
+	/// deletes the node with the given key
+	void erase(const K& key);
+	
+	/// checks whether the tree is balanced
+	bool checkBalanced() const;
+	/// checks whether the subtree rooted in the given node is balanced
+	bool checkBalanced(const Node * const node) const;
+
+	/// finds a the node with the given key,
+	/// if the node is not found, the function returns Iterator{nullptr}
+	Iterator find(const K& key) const;
 	
 	/**
 	 * \brief begin function of the iterator
@@ -210,6 +241,25 @@ public:
 
 	/// dereferences the iterator
 	N& operator*() const { return *current; };
+	
+	/// moves the iterator forward
+	Iterator& operator++() {
+		if (current != nullptr) {
+			if (current->right != nullptr) {
+				current = current->right.get();
+				ffwd(current);
+			}
+			else {
+				N* temp = current->parent;
+				while (temp != nullptr && current == temp->right.get()) {
+					current = temp;
+					temp = temp->parent;
+				}
+				current = temp;
+			}
+		}
+		return *this;
+	}
 
 	/// boolean operator that checks if two nodes are equal
 	bool operator==(const Iterator& rhs) { return this->current == rhs.current; };

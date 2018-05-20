@@ -124,9 +124,43 @@ template <typename K, typename V, typename C>
 struct _Bst: public Bst<K,V,C> {
 	
 	using Node = typename Bst<K,V,C>::Node;
-	using Iterator = typename Bst<K,V,C>::Iterator;
+	using Bst<K,V,C>::Bst;
+	using Bst<K,V,C>::print;
+	using Bst<K,V,C>::detailedPrint;
+	using Bst<K,V,C>::addSubTree;
+	using Bst<K,V,C>::addSubTreeBalanced;
+	using Bst<K,V,C>::insert;
+	using Bst<K,V,C>::size;
+	using Bst<K,V,C>::depth;
+	using Bst<K,V,C>::avgdepth;
+	using Bst<K,V,C>::balance;
+	using Bst<K,V,C>::clear;
+	using Bst<K,V,C>::erase;
+	using Bst<K,V,C>::checkBalanced;
+	
+	
+	void bst_setitem(K key, V value)
+	{
+		(*this)[key] = value;
+	}
+	
+	V bst_getitem(K key)  // can't have size_t& in python...
+	{
+		return (*this)[key];
+	}
+		
+	class KVIterator;
 	using const_iterator = typename _Bst<K,V,C>::KVIterator;
 	using iterator = typename _Bst<K,V,C>::const_iterator;
+
+	KVIterator begin() {
+		if (!Bst<K,V,C>::root)
+			return KVIterator{ nullptr };
+		Node* temp = Bst<K,V,C>::root.get();
+		Bst<K,V,C>::ffwd(temp);
+		return KVIterator{ temp };
+	}
+	KVIterator end() { return KVIterator{ nullptr }; }
 };
 
 using namespace boost::python;
@@ -134,6 +168,8 @@ template class Bst<size_t,size_t,std::less<size_t>>;
 #define tpair std::pair<size_t,size_t>
 #define ttree _Bst<size_t,size_t,std::less<size_t>>
 
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(depth_overload0, depth, 0, 0)
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(checkbalanced_overload0, checkBalanced, 0, 0)
 BOOST_PYTHON_MODULE(_bst) {
 	
 	to_python_converter<
@@ -165,6 +201,10 @@ BOOST_PYTHON_MODULE(_bst) {
 	    .def("clear", &ttree::clear)
 	    .def("erase", &ttree::erase)
 		
+	    .def("checkBalanced", (size_t(ttree::*)())0, checkbalanced_overload0())
 		.def("__iter__", python::iterator<ttree>())
+		
+		.def("__getitem__", &ttree::bst_getitem)
+        .def("__setitem__", &ttree::bst_setitem)
 	;
 }

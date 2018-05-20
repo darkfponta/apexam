@@ -164,7 +164,9 @@ public:
 	/// computes the number of nodes
 	size_t size() const;
 	/// computes the maximum depth of the tree
-	size_t depth() const;
+	size_t depth() const { return depth(root.get()); };
+	/// computes the maximum depth of the subtree rooted in the given node
+	size_t depth(const Node * const node) const;
 	/// computes the average depth of the tree
 	double avgdepth() const;
 
@@ -184,6 +186,33 @@ public:
 	/// finds a the node with the given key,
 	/// if the node is not found, the function returns Iterator{nullptr}
 	Iterator find(const K& key) const;
+	/// finds a the node with the given key,
+	/// if the node is not found, the function returns ConstIterator{nullptr}
+	ConstIterator cfind(const K& key) const;
+
+	/// subscript operator to fetch the value associated with the given key,
+	/// if the corresponding node is not found, the function creates it.
+	V& operator[](const K& key) {
+		Iterator it = find(key);
+		if (it==this->end()) {
+			Node* n=insertInternal(make_pair(key,V{}));
+			return n->pair.second;
+		} else {
+			return (*it).pair.second;
+		}
+	}
+
+	/// subscript operator to fetch the value associated with the given key,
+	/// if the corresponding node is not found, the function throws a NotFoundException
+	const V& operator[](const K& key) const {
+		ConstIterator it = cfind(key);
+		if (it == this->cend()) {
+			throw NotFoundException();
+		}
+		else {
+			return (*it).pair.second;
+		}
+	}
 	
 	/**
 	 * \brief begin function of the iterator

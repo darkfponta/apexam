@@ -31,17 +31,11 @@ Class PostcardList must manage the sorting of dates/senders/receivers. Note that
 
 import unittest
 import datetime  # use this module to deal with dates:  https://docs.python.org/3/library/datetime.html
-
-class PostcardList(object): 
-    ########################
-    # define attributes here
-    pass
-    ########################
-
+from PostcardList import PostcardList
 
 ########################
 # TO COMMENT 
-from exam_solution import PostcardList # overrides the class define above
+#from exam_solution import PostcardList # overrides the class define above
 ########################
 
 
@@ -55,7 +49,8 @@ class Test(unittest.TestCase):
         [p.readFile(f) for f,p in zip(self._files,self._PstLst)]
 
     def test_missing_attributes(self): 
-        attributes_to_define = ['_file','_postcards','_date','_from','_to',\
+        attributes_to_define = ['populatePostcards',\
+                                '_file','_postcards','_date','_from','_to',\
                                 'writeFile','readFile','parsePostcards',\
                                 'updateFile','updateLists',\
                                 'getNumberOfPostcards',\

@@ -10,14 +10,127 @@ The peculiarity of a c++/python interface stands in the impossibility to complet
 
 This requires conscious development of the c++ class as well as integration with the boost::python objects since the beginning. The downside of this is forcing the users who just want the c++ class to install a quite a heavy library and have all the dependencies properly set.
 
+For this reason the interface has been has been developed *"the hard way"* that is:
+
+- one can compile the bare **c++** class and use it that way without having to deal with other external libraries. To do this refer to the **c++** part of this exam.
+- who wants the python can refer to the **README.md** for the instructions on how to build the interface. This procedure will deal with the compilation of the **c++** class by its own.
+
+This has been achieved by wrapping the **Bst** class with a proper class implementing the additional parts needed and which could exposed in a fully functional interface.
 
 ## The code implementation
+
+The code implementation is carried out in the file **_bst.cc** and consists of two main parts: 
+- the first contains defines all the needed classes and object converters.
+
+- the second part consists of the python module definition, that is the explicit definition of all the objects and functions exposed in the interface.
+
+
+
+### The `_Bst` class
+
+The `_Bst` class inherits directly from the `Bst` class and is therefore **templated** according to the following pattern:
+
+```c++
+template <typename K, typename V, class C>
+```
+
+where:
+
+- `K` is the type of the keys i.e. the objects on which the ordering is imposed
+- `V` is the type of values stored in each node
+- `C` is the type of a comparator class which is used to define the ordering of nodes according to their keys;
+  in the `Bst` class implementation it is defaulted to `std::less<K>` which will cause nodes with smaller keys to be inserted on the left side while node with greater keys to be inserted on the right side.
+
+#### The additional methods
+  
+The class has the following **members**:
+- `get_item` the getter that will replace the `operator[](const K& key)` which couldn't be exposed directly.
+- `set_item` the setter that will replace the `operator[](const K& key)` in assignment statements.
+
+The class also includes the definition of the following non inherited methods:
+- `begin()` 
+- `end()` 
+
+In fact, the **Iterator** and **ConstIterator** iterators used and returned **Node** objects. To avoid to expose yet another class in the interface, write the object converters and deal with their pointer members an *ad-hoc* iterator has been implemented.
+
+
+
+#### The `KVIterator` class
+
+This **public** class defines the iterator object that allows proper traversing of the tree without having to deal with **Node** objects and related pointers.
+Being an inner class it inherits the templated pattern of the tree it is part of.
+
+Moreover it inherits from both the **Iterator** class and the **std::iterator** to allow the interoperability with python:
+
+```c++
+class _Bst<K, V, C>::KVIterator 
+	:	public Bst<K, V, C>::Iterator,
+		public std::iterator<std::forward_iterator_tag, const std::pair<K,V>>
+```
+
+The class implements the needed operators:
+
+- the prefix sum operator `KVIterator operator++()`
+- the postfix sum operator `KVIterator operator++(int)`
+- the dereference operator `const std::pair<K,V>& operator*() const`
+
+As can be seen the iterator deals with **std::pair** objects instead of **Node** objects: the operators here defined use the corresponding operators of the **Iterator** class and use the *getpair()* function to expose the key-value pair to the python interface.
+
 
 
 ### The object converters
 
+The following structures have been implemented:
+
+- **std_pair_to_tuple**: converts std::pair to a python tuple of size 2
+
+- **pair_from_python_tuple**: converts a python tuple of size 2 to a std::pair
+
+- **vector_from_python_list**: converts a python list to a std::vector
+
+  
+
+These structures implement the methods required by the boost::python library (e.g. *convert*, *convertible*, *construct*) to properly convert c++ and python objects back and forth.
+
+
 
 ### The custom exception wrappers
 
+To work in python, c++ exceptions need to be mangled properly. For this reason the following functions have been implemented:
+
+- `template <class T> void explainException(const T& x)` which gets the string message from the c++ exception and define a proper python error string with it.
+- `template <class T> void throwException()` which is used to throw the exception from the python code.
+
+
+
+###The Interface definition
+
+The python module is declared as
+
+```c++
+BOOST_PYTHON_MODULE(_bst)
+```
+
+this means that the module is called **_bst** and this name should be used when referring to it from python code. Between the braces following this definition the following take place:
+
+
 
 ## The code example
+
+Just as **testingmain.cc** the code revolves around a tree built with this unordered array of keys (10, 79, 13, 80, 60, 50).
+
+The example file is **bst.py**.
+
+The main functions described above are tested and work as intended.
+
+```
+       13                      50
+      /  \      balance()     /   \
+     10   79       ==>      10     79
+          / \                \    /  \
+         60  80              13  60   80
+         /				   
+        50				   
+```
+> Graphical representation of one of the operations performed during the tests.
+

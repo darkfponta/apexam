@@ -12,3 +12,22 @@ The source code is contained in the file **_bst.cc**.
 **Python3+** and python3+ compatible **boost::python** headers and libraries are needed.
 
 The interface refers to the **c++** source code in the *cpp* folder of this repository. 
+
+## Build and run
+
+The **Makefile** provided allows to compile the code.
+
+In order to build the interface the user must provide a **Makefile.ini** file containing the definition of the following variables:
+
+- **PYTHON**: the path to python include files
+- **BOOST_PYTHON**: the path tho the boost::python library
+- **BOOST_PYTHON_LIB**: the linker directive holding the boost::python library name
+
+An example could be:
+
+```makefile
+PYTHON = /usr/include/python3.6m/
+BOOST_PYTHON = /usr/lib/x86_64-linux-gnu
+BOOST_PYTHON_LIB = -lboost_python-py36
+```
+The file must reside in the same folder as the **Makefile**.

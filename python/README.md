@@ -37,4 +37,4 @@ To generate a postcard file call
 ```python
 python3 ./generator.py
 ```
-the *generator.py* file contains just the bare minimum needed to call the function populatePostcards using **test.txt** as destination file.
+The file *generator.py* contains just the bare minimum needed to call the function **populatePostcards** using *test.txt* as destination file.

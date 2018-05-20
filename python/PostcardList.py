@@ -1,5 +1,6 @@
 import datetime  # use this module to deal with dates:
                  # https://docs.python.org/3/library/datetime.html
+from random import randrange
                  
 class PostcardList(object):
 

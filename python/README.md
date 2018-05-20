@@ -2,6 +2,7 @@
 
 The class PostcardList is implemented in the file PostcardList.py. The implementation was moved to this file to reduce the clutter.
 
+
 ## Implemented functions
 The required functions have been implemented:
 
@@ -20,3 +21,20 @@ After the process of loading, the class allows the user to query some informatio
  - **getPostcardsBySender(sender)** returns a list with the postcards corresponding to the given sender
  - **getPostcardsByReceiver(receiver)** returns a list with all the postcards having the given receiver
  - **getPostcardsByDateRange(date_range)** return a list with all the postcards whose date falls inside the range given by the vector `date_range = (start_date, end_date)` 
+
+As requested also the function **populatePostcards(fname):** has been implemented: giving a destination file name, it will generate a bunch of random postcards complying with the given pattern.
+
+
+## Running the code
+
+To test the main functions of the PostcardList class just call
+```python
+python3 ./exam_requests.py
+```
+
+
+To generate a postcard file call
+```python
+python3 ./generator.py
+```
+the *generator.py* file contains just the bare minimum needed to call the function populatePostcards using **test.txt** as destination file.

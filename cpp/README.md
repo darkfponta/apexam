@@ -4,13 +4,12 @@ This folder contains the implementation of a Binary Search Tree class. For a bri
 
 The source code is divided into folders
 
-The *"inc"* folder contains:
--  the file **bst.h** contains the declaration of the classes:
+The *"inc"* folder contains the file **bst.h** whihc in turn contains the declaration of the classes:
    - `Tree`
    - `Node`
    - `Iterator`
    - `ConstIterator`
-   - the implementation of the shortest members
+and the implementation of their shortest members.
 
 The *"src"* folder contains the file **bst.cc** in which the implementation of the functions of the Bst class is listed.
 
@@ -24,7 +23,7 @@ The main folder contains two files:
 
 The **Makefile** provided allows to compile the code. Refer to the following options:
 
-- `make` will produce the main executables **testmain** and **timingmain**
+- `make` or `make all` will produce the main executables **testmain** and **timingmain**
 - `make debug` will produce the debug version of the main executables **testmain** and **timingmain**
 - `make doc` will generate the Doxygen documentation from the source files
 - `make clean` will clean all the files that the previous commands will produce

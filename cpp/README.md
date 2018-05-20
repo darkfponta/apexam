@@ -11,3 +11,12 @@ The *"inc"* folder contains:
    - `Iterator`
    - `ConstIterator`
    - the implementation of the shortest members
+
+The *"src"* folder contains the file **bst.cc** in which the implementation of the functions of the Bst class is listed.
+
+The *"Doxygen"* folder contains the file **doxy.in** which is used to generate the code documentation.
+
+The *"misc"* folder contains the file **misc.h** in which are defined a few ancillary functions and structure used for testing the code.
+
+
+The **Makefile** provided allows to compile the code.

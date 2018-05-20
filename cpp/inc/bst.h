@@ -73,6 +73,26 @@ protected:
 			n = n->left.get();
 	}
 	
+	/// adds a new node, wrapped by insert(const KVpair& pair)
+	Node* insertInternal(const KVpair& pair);
+
+	/// adds a new node, used by insertInternal(const KVpair& pair)
+	Node* insertSingle(Node* cur, const KVpair& pair);
+
+	/// removes the pointer to the given node from its parent
+	void detachParent(const Node* cur);
+	
+	/// nested structure that defines the operator used for comparing two key-value pairs
+	struct KVcomp {
+		C comp;
+		bool operator()(const KVpair& lhs, const KVpair& rhs) {
+			return comp(lhs.first, rhs.first);
+		}
+		KVcomp(C c = C{}) : comp{ c } {};
+		friend class Bst;
+	};
+
+	
 public:
 
 	// Iterator fwd decl

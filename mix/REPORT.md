@@ -44,8 +44,8 @@ where:
 #### The additional methods
   
 The class has the following **methods**:
-- `get_item` the getter that will replace the `operator[](const K& key)` which couldn't be exposed directly.
-- `set_item` the setter that will replace the `operator[](const K& key)` in assignment statements.
+- `bst_getitem` the getter that will replace the `operator[](const K& key)` which couldn't be exposed directly.
+- `bst_setitem` the setter that will replace the `operator[](const K& key)` in assignment statements.
 
 The class also includes the definition of the following non inherited methods:
 - `begin()` 
@@ -126,11 +126,11 @@ this means that the module is called **_bst** and this name should be used when 
   - `detailedPrint `, calls `void Bst::detailedPrint() const`.
   - `addSubTree`, calls
   ```c++
-  void Bst::addSubTree(const std::vector<std::pair<size_t,size_t>>& container, size_t first, size_t last)
+    void Bst::addSubTree(const std::vector<std::pair<size_t,size_t>>& container, size_t first, size_t last)
   ```
   - `addSubTreeBalanced`, calls
   ```c++
-  void Bst::addSubTreeBalanced(std::vector<std::pair<size_t,size_t>>& container)
+    void Bst::addSubTreeBalanced(std::vector<std::pair<size_t,size_t>>& container)
   ```
   - `insert`, calls `void Bst::insert(const std::pair<size_t,size_t>& pair)`.
   - `size`, calls `size_t Bst::size() const`.

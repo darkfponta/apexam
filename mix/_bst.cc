@@ -1,11 +1,12 @@
 #include "bst.h"
 #include <iterator>
 #include <boost/python.hpp>
+#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
 namespace python = boost::python;
 
 // object converters
-namespace {
+namespace {	
 // Converts a std::pair instance to a Python tuple.
 template <typename T1, typename T2>
 struct std_pair_to_tuple
@@ -118,11 +119,26 @@ struct vector_from_python_list
 		data->convertible = storage;
 
     }
+ 
 };
+
+
+// exception
+template <class T>
+void explainException(const T& x) {
+	PyErr_SetString(PyExc_UserWarning, x.what()); 
+};
+template void explainException<NotFoundException>(const NotFoundException&);
+template void explainException<InvalidRangeException>(const InvalidRangeException&);
+template void explainException<InvalidLeafException>(const InvalidLeafException&);
+
+template <class T>
+void throwException() {	throw T(); };
+
 
 template <typename K, typename V, typename C>
 struct _Bst: public Bst<K,V,C> {
-	
+
 	using Node = typename Bst<K,V,C>::Node;
 	using Bst<K,V,C>::Bst;
 	using Bst<K,V,C>::print;
@@ -163,6 +179,27 @@ struct _Bst: public Bst<K,V,C> {
 	KVIterator end() { return KVIterator{ nullptr }; }
 };
 
+template <typename K, typename V, class C>
+class _Bst<K, V, C>::KVIterator 
+	:	public Bst<K, V, C>::Iterator,
+		public std::iterator<std::forward_iterator_tag, const KVpair>
+{
+protected:
+	using parent = typename Bst<K, V, C>::Iterator;
+	using N = typename parent::N;
+public:
+	using parent::Iterator; // the ctor
+	KVIterator operator++() {
+		return parent::operator++();
+		}
+	KVIterator operator++(int) {
+		KVIterator v(*this); parent::operator++();
+		return v;
+		}
+	const KVpair& operator*() const { return parent::operator*().getpair(); }
+};
+};
+
 using namespace boost::python;
 template class Bst<size_t,size_t,std::less<size_t>>;
 #define tpair std::pair<size_t,size_t>
@@ -184,6 +221,13 @@ BOOST_PYTHON_MODULE(_bst) {
 		.def(vector_indexing_suite<std::vector<tpair>>())
     ;
 	
+	register_exception_translator<NotFoundException>(explainException<NotFoundException>);
+	def("NotFoundException", throwException<NotFoundException>);
+	register_exception_translator<InvalidRangeException>(explainException<InvalidRangeException>);
+	def("InvalidRangeException", throwException<InvalidRangeException>);
+	register_exception_translator<InvalidLeafException>(explainException<InvalidLeafException>);
+	def("InvalidLeafException", throwException<InvalidLeafException>);
+	
 	class_<ttree>("Bst_sizet",init<>())
 		.def(init<tpair>())
 	    .def(init<std::vector<tpair>>())
@@ -191,20 +235,23 @@ BOOST_PYTHON_MODULE(_bst) {
 	    .def("print", &ttree::print)
 	    .def("detailedPrint"  , &ttree::detailedPrint)
 		
+		.def("addSubTree", &ttree::addSubTree)
+		.def("addSubTreeBalanced", &ttree::addSubTreeBalanced)
 		.def("insert", &ttree::insert)
 	    
 	    .def("size", &ttree::size)
-		.def("depth", &ttree::depth)
+	    .def("depth", (size_t(ttree::*)())0, depth_overload0())
 	    .def("avgdepth", &ttree::avgdepth)
-		
+	    
 	    .def("balance", &ttree::balance)
 	    .def("clear", &ttree::clear)
 	    .def("erase", &ttree::erase)
-		
+	    
 	    .def("checkBalanced", (size_t(ttree::*)())0, checkbalanced_overload0())
 		.def("__iter__", python::iterator<ttree>())
 		
 		.def("__getitem__", &ttree::bst_getitem)
         .def("__setitem__", &ttree::bst_setitem)
 	;
-}
+	
+};

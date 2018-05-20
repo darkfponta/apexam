@@ -81,7 +81,23 @@ protected:
 
 	/// removes the pointer to the given node from its parent
 	void detachParent(const Node* cur);
-	
+
+	/// internal function used by checkBalanced which proceeds recursively on subtrees
+	bool checkBalancedInternal(const Node *node, size_t& depth) const;
+
+	/// internal function used to rapidly add nodes to the tree using a sorted vector
+	void addSubTreeFromSorted(vector<KVpair>& container);
+
+	/// internal function that sorts the given vector and adds it to the tree
+	void insertSorted(const vector<KVpair>& container, size_t first, size_t last,
+		Node* prev = nullptr, unique_ptr<Node>* branch = nullptr);
+
+	/// internal function used to compute the tree size recursively. Called by size().
+	void sizeInternal(Node* node, size_t&c) const;
+
+	/// internal function used to recursively evaluate the average depth of the tree. Called by avgdepth
+	void avgdepthInternal(const Node* node, size_t curDepth, uint64_t& acc) const;
+
 	/// nested structure that defines the operator used for comparing two key-value pairs
 	struct KVcomp {
 		C comp;
@@ -92,7 +108,6 @@ protected:
 		friend class Bst;
 	};
 
-	
 public:
 
 	// Iterator fwd decl
@@ -176,6 +191,8 @@ public:
 
 	/// Adds to the tree all the vector elements in the given range
 	void addSubTree(const vector<KVpair>& container, size_t first, size_t last);
+	/// Clears the tree and feeds to the tree all the given vector
+	void addSubTreeBalanced(vector<KVpair>& container);
 	/// adds a new node
 	void insert(const KVpair& pair) {
 		insertInternal(pair); // ignore returned pointer
@@ -274,6 +291,7 @@ public:
 };
 
 
+
 /**
  * \brief Iterator class for Bst
  */
@@ -309,12 +327,20 @@ public:
 		}
 		return *this;
 	}
+	
+	/// moves the iterator forward
+	Iterator operator++(int) {
+		Iterator it{ current };
+		++(*this);
+		return it;
+	}
 
 	/// boolean operator that checks if two nodes are equal
 	bool operator==(const Iterator& rhs) { return this->current == rhs.current; };
 	/// boolean operator that checks if two nodes are different
 	bool operator!=(const Iterator& rhs) { return !this->operator==(rhs); };
 };
+
 
 
 /**

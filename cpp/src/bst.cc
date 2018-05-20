@@ -134,6 +134,79 @@ void Bst<K, V, C>::erase(const K& key) {
 }
 
 
+template <typename K, typename V, class C>
+bool Bst<K, V, C>::checkBalanced(const Node * const node) const {
+	if (node == nullptr)
+		return true;
+
+	size_t depth;
+	return checkBalancedInternal(node, depth);
+}
+
+template <typename K, typename V, class C>
+bool Bst<K, V, C>::checkBalancedInternal(const Node * const node, size_t& depth) const {
+	if (node == nullptr) {
+		depth = 0;
+		return true;
+	}
+
+	size_t ldepth, rdepth;
+	bool lbalanced = checkBalancedInternal(node->left.get(), ldepth);
+	bool rbalanced = checkBalancedInternal(node->right.get(), rdepth);
+	depth = max(ldepth, rdepth) + 1;
+	return (absdiff(ldepth,rdepth) <= 1) && lbalanced && rbalanced;
+}
+
+
+template <typename K, typename V, class C>
+typename Bst<K, V, C>::Iterator Bst<K, V, C>::find(const K& key) const {
+	if (!root)
+		return Iterator{ nullptr };
+
+	Node *temp = root.get();
+
+	while (comp(temp->pair.first, key) || comp(key, temp->pair.first)) {
+		if (comp(key, temp->pair.first)) { // go left
+			if (temp->left != nullptr) {
+				temp = temp->left.get();
+			}
+			else { return Iterator{ nullptr }; }
+		}
+		else { 
+			if (temp->right != nullptr) { // go right
+				temp = temp->right.get();
+			}
+			else { return Iterator{ nullptr }; }
+		}
+	}
+	return Iterator{ temp };
+}
+
+template <typename K, typename V, class C>
+typename Bst<K, V, C>::ConstIterator Bst<K, V, C>::cfind(const K& key) const {
+	if (!root)
+		return ConstIterator{ nullptr };
+
+	Node *temp = root.get();
+
+	while (comp(temp->pair.first, key) || comp(key, temp->pair.first)) {
+		if (comp(key, temp->pair.first)) { // go left
+			if (temp->left != nullptr) {
+				temp = temp->left.get();
+			}
+			else { return ConstIterator{ nullptr }; }
+		}
+		else {
+			if (temp->right != nullptr) { // go right
+				temp = temp->right.get();
+			}
+			else { return ConstIterator{ nullptr }; }
+		}
+	}
+	return ConstIterator{ temp };
+}
+
+
 // specialized templates
 template class Bst<size_t, size_t>;
 template class Bst<size_t, size_t, bool(*)(const size_t&, const size_t&)>;

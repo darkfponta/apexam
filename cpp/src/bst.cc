@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 
+
 using namespace std;
 
 template <typename K, typename V, class C>
@@ -61,6 +62,59 @@ typename Bst<K,V,C>::Node* Bst<K, V, C>::insertInternal(const KVpair& pair) {
 }
 
 
+
+template <typename K, typename V, class C>
+void Bst<K, V, C>::insertSorted(const vector<KVpair>& container, size_t first, size_t last, Node* prev, unique_ptr<Node>* branch) {
+	if ((!!prev ^ !!branch) != 0)
+		throw InvalidLeafException();
+
+	if (first > last)
+		throw InvalidRangeException();
+
+	const size_t mid = (first + last) / 2;
+
+	Node* node = new Node(container[mid]);
+	if (prev == nullptr) {
+		root.reset(node);
+	} else {
+		branch->reset(node);
+	}
+	node->parent = prev;
+
+	if (first<mid)
+		this->insertSorted(container, first, mid - 1, node, &node->left);
+	if (mid<last)
+		this->insertSorted(container, mid + 1, last, node, &node->right);
+}
+
+
+template <typename K, typename V, typename C>
+void Bst<K, V, C>::addSubTreeFromSorted(vector<KVpair>& container) {
+	// if we come from a vector obtained by an in-order traversal this is just O(n)
+	this->insertSorted(container, 0, container.size() - 1, nullptr, nullptr);
+}
+
+
+template <typename K, typename V, typename C>
+void Bst<K, V, C>::addSubTreeBalanced(vector<KVpair>& container) {
+	sort(container.begin(), container.end(), KVcomp());
+	this->addSubTreeFromSorted(container);
+}
+
+
+template <typename K, typename V, class C>
+void Bst<K, V, C>::detachParent(const Node* cur) {
+	Node* parent = cur->parent;
+	if (parent != nullptr)
+	{
+		if (cur == parent->left.get())
+			parent->left.release();
+		else if (cur == parent->right.get())
+			parent->right.release();
+	}
+}
+
+
 template <typename K, typename V, class C>
 void Bst<K,V,C>::detailedPrint() const {
 	if (this->cbegin() == this->cend())
@@ -93,6 +147,22 @@ void Bst<K, V, C>::print() const {
 	}
 	cout << endl;
 }
+
+
+template <typename K, typename V, class C>
+void Bst<K, V, C>::balance() {
+	if (!root) return;
+
+	vector<KVpair> v;
+	v.reserve(this->size());
+	for (auto it = cbegin(); it != cend(); ++it)
+		v.push_back((*it).pair);
+
+	clear();
+	//addSubTree(v, 0, v.size()-1);
+	addSubTreeFromSorted(v); // faster than ordinary addSubTree since v is sorted.
+}
+
 
 template <typename K, typename V, class C>
 void Bst<K, V, C>::erase(const K& key) {
@@ -131,6 +201,63 @@ void Bst<K, V, C>::erase(const K& key) {
 			insert(it);
 	}
 	else { throw NotFoundException(); };
+}
+
+
+template <typename K, typename V, class C>
+void Bst<K, V, C>::sizeInternal(Node* node, size_t&c) const {
+	if (node == nullptr) return;
+	++c;
+	sizeInternal(node->left.get(), c);
+	sizeInternal(node->right.get(), c);
+}
+
+template <typename K, typename V, class C>
+size_t Bst<K, V, C>::size() const {  // this performs ~2.5x faster than the one below
+	size_t c = 0;
+	sizeInternal(root.get(), c);
+	return c;
+}
+
+// alternative implementation
+//template<typename K, typename V, class C>
+//size_t Bst<K, V, C>::size() const {
+//	size_t c = 0;
+//	for (ConstIterator it = cbegin(); it != cend(); ++it)
+//		c++;
+//	return c;
+//}
+
+
+template <typename K, typename V, class C>
+size_t Bst<K, V, C>::depth(const Node * const node) const {
+	if (!node)
+		return 0;
+
+	return max(depth(node->left.get()), depth(node->right.get())) + 1;
+}
+
+template <typename K, typename V, class C>
+double Bst<K, V, C>::avgdepth() const {
+	if (!root)
+		return 0;
+
+	size_t curDepth = 1;
+	uint64_t acc = curDepth;
+	avgdepthInternal(root->left.get(), curDepth, acc);
+	avgdepthInternal(root->right.get(), curDepth, acc);
+	return (static_cast<double>(acc) / this->size());
+}
+
+
+template <typename K, typename V, class C>
+void Bst<K, V, C>::avgdepthInternal(const Node* node, size_t curDepth, uint64_t& acc) const {
+	if (!node)
+		return;
+	curDepth++;
+	acc += curDepth;
+	avgdepthInternal(node->left.get(), curDepth, acc);
+	avgdepthInternal(node->right.get(), curDepth, acc);
 }
 
 

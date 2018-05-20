@@ -12,7 +12,7 @@ using namespace std;
 
 #define KVpair std::pair<K, V>
 #define alloc(T) allocator<T>
-#define absdiff(a,b) a > b ? a - b : b - a
+#define absdiff(a,b) (a > b ? a - b : b - a)
 
 template <typename K, typename V, class C = less<K>>
 class Bst {

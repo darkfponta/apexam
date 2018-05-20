@@ -18,5 +18,13 @@ The *"Doxygen"* folder contains the file **doxy.in** which is used to generate t
 
 The *"misc"* folder contains the file **misc.h** in which are defined a few ancillary functions and structure used for testing the code.
 
+The main folder contains two files:
+- **testmain.cc** which tests all the functions of the code and tests the functionality with a custom comparator.
+- **timingmain.cc** which measures the performance of the `find(key)` function before and after balancing a tree.
 
-The **Makefile** provided allows to compile the code.
+The **Makefile** provided allows to compile the code. Refer to the following options:
+
+- `make` will produce the main executables **testmain** and **timingmain**
+- `make debug` will produce the debug version of the main executables **testmain** and **timingmain**
+- `make doc` will generate the Doxygen documentation from the source files
+- `make clean` will clean all the files that the previous commands will produce
